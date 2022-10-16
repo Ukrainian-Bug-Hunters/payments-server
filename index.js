@@ -39,7 +39,7 @@ server.put('/payments/:id', (req, res) => {
         res.status(200).send(payment);
     }
     else{
-        res.status(404).send('Wrong description')
+        res.status(400).send('Wrong description')
     }
 });
 
