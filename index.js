@@ -34,12 +34,17 @@ server.post('/payments', (req, res) => {
 
 server.put('/payments/:id', (req, res) => {
     const payment = payments.find( payment => payment.id === req.params.id);
-    if(req.body.description){
-        payment.description = req.body.description;
-        res.status(200).send(payment);
+    if(payment){
+        if(req.body.description){
+            payment.description = req.body.description;
+            res.status(200).send(payment);
+        }
+        else{
+            res.status(400).send('Wrong description')
+        }
     }
     else{
-        res.status(400).send('Wrong description')
+        res.status(404).send('Could not find payment with this ID')
     }
 });
 
