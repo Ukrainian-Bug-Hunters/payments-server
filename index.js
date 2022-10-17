@@ -23,7 +23,8 @@ function validatePaymentDataMiddleWare(req, res, next) {
         Number.isFinite(payment.exchangeRate) &&
         payment.description &&
         payment.description !== '')) {
-            return res.status(400).send('Invalid Data');
+            res.status(400).send('Invalid Data');
+            return;
         };
         
     next();
