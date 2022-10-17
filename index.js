@@ -13,41 +13,35 @@ server.get('/payments', (req, res) => {
     res.status(200).send(payments);
 });
 
-function validatePaymentData (payment) {
+function validatePaymentDataMiddleWare(req, res, next) {
+    const payment = {...req.body};
     const currentDate = new Date().toLocaleDateString('fr-CA');
-    if(payment.date >= currentDate &&
+    
+    if(!(payment.date >= currentDate &&
         currencies.includes(payment.currency) &&
         Number.isFinite(payment.amount) && 
         Number.isFinite(payment.exchangeRate) &&
         payment.description &&
-        payment.description !== ''
-    ) {
-        return payment;
-    }
-    else {
-        payment = null;
-        return payment;
-    }
+        payment.description !== '')) {
+            return res.status(400).send('Invalid Data');
+        };
+        
+    next();
 };
 
-server.post('/payments', (req, res) => {
-    const payment = validatePaymentData({...req.body});
-    if(payment) {
-        Object.assign(payment, {
-            id: uuidv4(),
-            status: 'Pending'
-        });
+server.post('/payments', validatePaymentDataMiddleWare, (req, res) => {
+    const payment = {...req.body};
 
-        payments.push(payment);
-        res.status(200).send(payment);
+    Object.assign(payment, {
+        id: uuidv4(),
+        status: 'Pending'
+    });
+    payments.push(payment);
+    res.status(200).send(payment);
 
-        setTimeout(function() {
-            payment.status = 'Completed'
-        }, 10000);
-    }
-    else {
-        res.status(404).send('Not Found')
-    }
+    setTimeout(function() {
+        payment.status = 'Completed'
+    }, 10000);
 });
 
 server.listen(4000, function() {
