@@ -24,9 +24,7 @@ function validatePaymentDataMiddleWare(req, res, next) {
         payment.description &&
         payment.description !== '')) {
             res.status(400).send('Invalid Data');
-            return;
         };
-        
     next();
 };
 
