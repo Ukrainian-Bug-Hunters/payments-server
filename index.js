@@ -16,10 +16,9 @@ server.get('/payments/:id', (req, res) => {
     const payment = payments.find( payment => payment.id === req.params.id);
     if(payment){
         res.status(200).send(payment);
+        return;
     }
-    else{
-        res.status(404).send({message: 'Wrong id'});
-    }
+    res.status(404).send({message: 'Wrong id'});
 });
 
 server.post('/payments', (req, res) => {
@@ -34,18 +33,12 @@ server.post('/payments', (req, res) => {
 
 server.put('/payments/:id', (req, res) => {
     const payment = payments.find( payment => payment.id === req.params.id);
-    if(payment){
-        if(req.body.description){
-            payment.description = req.body.description;
-            res.status(200).send(payment);
-        }
-        else{
-            res.status(400).send('Wrong description')
-        }
+    if(!payment || !req.body.description){
+        res.status(404).send('Wrong description or server can not find payment with this ID');
+        return;
     }
-    else{
-        res.status(404).send('Could not find payment with this ID')
-    }
+    payment.description = req.body.description;
+    res.status(200).send(payment);
 });
 
 server.delete('/payments/:id', (req, res) => {
