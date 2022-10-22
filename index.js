@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import payments from './payments.js';
 import { v4 as uuidv4} from 'uuid';
-import currencies from './currencies.js'
+
+import paymentValidator from './PaymentValidator.js';
 
 const server = express();
 
@@ -11,18 +12,15 @@ server.use(cors());
 
 function validatePaymentDataMiddleWare(req, res, next) {
     const payment = {...req.body};
-    const currentDate = new Date().toLocaleDateString('fr-CA');
+
+    const errors = paymentValidator.validate(payment);
+    if(errors.length > 0) {
+        res.status(400).send(errors);
+        next("Payment validation has failed");
+    }
     
-    if(!(payment.date >= currentDate &&
-        currencies.includes(payment.currency) &&
-        Number.isFinite(payment.amount) && 
-        Number.isFinite(payment.exchangeRate) &&
-        payment.description &&
-        payment.description !== '')) {
-            res.status(400).send('Invalid Data');
-        };
-        next();
-    };
+    next();
+};
     
 server.get('/payments', (req, res) => {
     res.status(200).send(payments);
