@@ -33,17 +33,22 @@ server.post('/payments', (req, res) => {
 
 server.put('/payments/:id', (req, res) => {
     const payment = payments.find( payment => payment.id === req.params.id);
-    if(!payment || !req.body.description){
-        res.status(404).send('Wrong description or server can not find payment with this ID');
+    if(!payment){
+        res.status(404).send('server can not find payment with this ID');
         return;
     }
+
+    if(!req.body.description){
+        res.status(404).send('Wrong description');
+        return;
+    }
+
     payment.description = req.body.description;
     res.status(200).send(payment);
 });
 
 server.delete('/payments/:id', (req, res) => {
-    const payment = payments.find( payment => payment.id === req.params.id);
-    const paymentIdx = payments.indexOf(payment);
+    const paymentIdx = payments.findIndex(payment => payment.id === req.params.id);
     payments.splice(paymentIdx, 1);
     res.status(200).send();
 });
