@@ -9,10 +9,6 @@ const server = express();
 server.use(express.json());
 server.use(cors());
 
-server.get('/payments', (req, res) => {
-    res.status(200).send(payments);
-});
-
 function validatePaymentDataMiddleWare(req, res, next) {
     const payment = {...req.body};
     const currentDate = new Date().toLocaleDateString('fr-CA');
@@ -25,12 +21,24 @@ function validatePaymentDataMiddleWare(req, res, next) {
         payment.description !== '')) {
             res.status(400).send('Invalid Data');
         };
-    next();
-};
+        next();
+    };
+    
+server.get('/payments', (req, res) => {
+    res.status(200).send(payments);
+});
+
+server.get('/payments/:id', (req, res) => {
+    const payment = payments.find(payment => payment.id === req.params.id);
+    if(payment){
+        res.status(200).send(payment);
+        return;
+    }
+    res.status(404).send({message: 'Wrong id'});
+});
 
 server.post('/payments', validatePaymentDataMiddleWare, (req, res) => {
     const payment = {...req.body};
-
     Object.assign(payment, {
         id: uuidv4(),
         status: 'Pending'
@@ -41,6 +49,28 @@ server.post('/payments', validatePaymentDataMiddleWare, (req, res) => {
     setTimeout(function() {
         payment.status = 'Completed'
     }, 10000);
+});
+
+server.put('/payments/:id', (req, res) => {
+    const payment = payments.find( payment => payment.id === req.params.id);
+    if(!payment){
+        res.status(404).send('Could not find payment with this ID');
+        return;
+    }
+
+    if(!req.body.description){
+        res.status(404).send('Wrong description');
+        return;
+    }
+
+    payment.description = req.body.description;
+    res.status(200).send(payment);
+});
+
+server.delete('/payments/:id', (req, res) => {
+    const paymentIdx = payments.findIndex(payment => payment.id === req.params.id);
+    payments.splice(paymentIdx, 1);
+    res.status(200).send();
 });
 
 server.listen(4000, function() {
