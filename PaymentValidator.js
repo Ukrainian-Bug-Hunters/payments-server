@@ -32,23 +32,23 @@ class PaymentValidator {
     if(!this.isDate(payment)) {
       errors.push(`payment date is wrong: ${payment.date}`);
     };
+    
+    if(!this.isCurrency(payment)) {
+      errors.push(`payment currency is wrong: ${payment.currency}`);
+    };
+    
+    if(!this.isValidNumber(payment.amount)) {
+      errors.push(`payment amount is wrong: ${payment.amount}`);
+    };
+    
+    if(!this.isValidNumber(payment.exchangeRate)) {
+      errors.push(`payment exchangerate is wrong: ${payment.exchangeRate}`);
+    };
 
     if(!this.isDescription(payment)) {
-        errors.push(`payment description is wrong: ${payment.description}`);
-    }
+      errors.push(`payment description is wrong: ${payment.description}`);
+    };
 
-    if(!this.isValidNumber(payment.amount)) {
-        errors.push(`payment amount is wrong: ${payment.amount}`);
-    }
-
-    if(!this.isValidNumber(payment.exchangeRate)) {
-        errors.push(`payment exchangerate is wrong: ${payment.exchangeRate}`);
-    }
-
-    if(!this.isCurrency(payment)) {
-        errors.push(`payment currency is wrong: ${payment.currency}`);
-    }
-    
     return errors;
   }
 }
