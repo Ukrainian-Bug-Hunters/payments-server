@@ -14,8 +14,8 @@ function validatePaymentDataMiddleWare(req, res, next) {
     const payment = {...req.body};
     const errors = paymentValidator.validate(payment);
 
-    if(Object.values(errors).length !== 0) {
-        res.status(400).send(errors);
+    if(errors.length > 0) {
+        res.status(400).send({'errors': errors});
         next("Payment validation has failed");
     }
 

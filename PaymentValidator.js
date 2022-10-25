@@ -27,26 +27,26 @@ class PaymentValidator {
   }
 
   validate(payment) {
-    const errors = {};
+    const errors = [];
     
     if(!this.isDate(payment)) {
-      Object.assign(errors, {"wrong date": payment.date});
+      errors.push(`payment date is wrong: ${payment.date}`);
     };
     
     if(!this.isCurrency(payment)) {
-      Object.assign(errors, {"wrong currency": payment.currency});
+      errors.push(`payment currency is wrong: ${payment.currency}`);
     };
     
     if(!this.isValidNumber(payment.amount)) {
-      Object.assign(errors, {"wrong amount": payment.amount});
+      errors.push(`payment amount is wrong: ${payment.amount}`);
     };
     
     if(!this.isValidNumber(payment.exchangeRate)) {
-      Object.assign(errors, {"wrong exchangerate": payment.exchangeRate});
+      errors.push(`payment exchangerate is wrong: ${payment.exchangeRate}`);
     };
 
     if(!this.isDescription(payment)) {
-      Object.assign(errors, {"wrong description": payment.description});
+      errors.push(`payment description is wrong: ${payment.description}`);
     };
 
     return errors;
