@@ -12,16 +12,16 @@ server.use(cors());
 
 function validatePaymentDataMiddleWare(req, res, next) {
     const payment = {...req.body};
-
     const errors = paymentValidator.validate(payment);
-    if(errors.length > 0) {
+
+    if(Object.values(errors).length !== 0) {
         res.status(400).send(errors);
         next("Payment validation has failed");
     }
-    
+
     next();
 };
-    
+
 server.get('/payments', (req, res) => {
     res.status(200).send(payments);
 });
