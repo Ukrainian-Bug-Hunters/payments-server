@@ -1,21 +1,18 @@
-import express from 'express';
-import cors from 'cors';
-import payments from './payments.js';
+import { createServer } from "http";
+import { Server } from "socket.io";
 
-const server = express();
-
-server.use(express.json());
-server.use(cors());
-
-server.get('/payments', (req, res) => {
-    res.status(200).send(payments);
+const httpServer = createServer();
+const io = new Server(httpServer, {
+  cors: {},
 });
 
-
-
-server.listen(4000, function() {
-    console.log(`Server is running on port ${this.address().port}`);
+io.on("connection", (socket) => {
+  console.log(`a user connected with id: ${socket.id}`);
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
 });
 
-
-
+httpServer.listen(4000, () => {
+  console.log("listening on :4000");
+});
