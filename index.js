@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import payments from './payments.js';
+import paymentsIn from './in-payments.js';
 import { v4 as uuidv4} from 'uuid';
 
 import paymentValidator from './PaymentValidator.js';
@@ -21,6 +22,25 @@ function validatePaymentDataMiddleWare(req, res, next) {
 
     next();
 };
+
+function getAccountBalanceData(inPayments) {
+    const inPaymentsAmount = inPayments.map(payment => payment.amount);
+    const homeAmount = inPaymentsAmount.reduce((a, b) => a + b, 0);
+    const homeCurrency = 'GBP';
+    const homeCurrencySymbol = '\u00A3';
+
+    const balance = {
+        "amount": homeAmount,
+        "currency": homeCurrency,
+        "currencySymbol": homeCurrencySymbol,
+    };
+    return balance;
+};
+
+server.get('/payments/balance', (req, res) => {
+    const balance = getAccountBalanceData(paymentsIn);
+    res.status(200).send(balance);
+});
 
 server.get('/payments', (req, res) => {
     res.status(200).send(payments);
