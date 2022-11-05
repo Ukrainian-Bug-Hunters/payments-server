@@ -45,7 +45,7 @@ server.get("/hello", (req, res) => {
 
   const data = {
     action: "updated",
-    payments: [payments],
+    payments: payments,
   };
 
   ioServer.sockets.emit("payments", data);
