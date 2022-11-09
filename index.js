@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import payments from './payments.js';
 import { v4 as uuidv4} from 'uuid';
 
-import paymentValidator from './PaymentValidator.js';
+import paymentsOut from './data/payments-out.js';
+import paymentsIn from './data/payments-in.js';
+import paymentValidator from './middleware/PaymentValidator.js';
+import {calculateTotalhomeAmount} from './helper/Balance.js';
 
 const server = express();
 
@@ -22,12 +24,22 @@ function validatePaymentDataMiddleWare(req, res, next) {
     next();
 };
 
+server.get('/payments/balance', (req, res) => {
+    const balance = {
+        amount: calculateTotalhomeAmount(paymentsIn),
+        currency: 'GBP',
+        currencySymbol: '\u00A3'
+    };
+    
+    res.status(200).send(balance);
+});
+
 server.get('/payments', (req, res) => {
-    res.status(200).send(payments);
+    res.status(200).send(paymentsOut);
 });
 
 server.get('/payments/:id', (req, res) => {
-    const payment = payments.find(payment => payment.id === req.params.id);
+    const payment = paymentsOut.find(payment => payment.id === req.params.id);
     if(payment){
         res.status(200).send(payment);
         return;
@@ -41,7 +53,7 @@ server.post('/payments', validatePaymentDataMiddleWare, (req, res) => {
         id: uuidv4(),
         status: 'Pending'
     });
-    payments.push(payment);
+    paymentsOut.push(payment);
     res.status(200).send(payment);
 
     setTimeout(function() {
@@ -50,7 +62,7 @@ server.post('/payments', validatePaymentDataMiddleWare, (req, res) => {
 });
 
 server.put('/payments/:id', (req, res) => {
-    const payment = payments.find( payment => payment.id === req.params.id);
+    const payment = paymentsOut.find( payment => payment.id === req.params.id);
     if(!payment){
         res.status(404).send('Could not find payment with this ID');
         return;
@@ -66,8 +78,8 @@ server.put('/payments/:id', (req, res) => {
 });
 
 server.delete('/payments/:id', (req, res) => {
-    const paymentIdx = payments.findIndex(payment => payment.id === req.params.id);
-    payments.splice(paymentIdx, 1);
+    const paymentIdx = paymentsOut.findIndex(payment => payment.id === req.params.id);
+    paymentsOut.splice(paymentIdx, 1);
     res.status(200).send();
 });
 

@@ -1,4 +1,4 @@
-const payments = [
+const paymentsOut = [
     {
       id: "6effb60b-4021-451c-9830-b65fdfb05346",  
       date: "2018-05-12",
@@ -46,5 +46,4 @@ const payments = [
     },
   ];
   
- // module.exports = payments;
-  export default payments;
+export default paymentsOut;
