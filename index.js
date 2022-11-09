@@ -3,8 +3,9 @@ import cors from 'cors';
 import { v4 as uuidv4} from 'uuid';
 
 import paymentsOut from './data/payments-out.js';
+import paymentsIn from './data/payments-in.js';
 import paymentValidator from './middleware/PaymentValidator.js';
-import balance from './data/Balance.js';
+import {calculateTotalhomeAmount} from './helper/Balance.js';
 
 const server = express();
 
@@ -24,6 +25,12 @@ function validatePaymentDataMiddleWare(req, res, next) {
 };
 
 server.get('/payments/balance', (req, res) => {
+    const balance = {
+        amount: calculateTotalhomeAmount(paymentsIn),
+        currency: 'GBP',
+        currencySymbol: '\u00A3'
+    };
+    
     res.status(200).send(balance);
 });
 
