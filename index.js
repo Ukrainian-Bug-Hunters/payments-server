@@ -77,6 +77,22 @@ server.put('/payments/:id', (req, res) => {
     res.status(200).send(payment);
 });
 
+server.put('/payments/cancel/:id', (req, res) => {
+    const payment = paymentsOut.find( payment => payment.id === req.params.id);
+    if(!payment){
+        res.status(404).send('Could not find payment with this ID');
+        return;
+    }
+    
+    if(payment.status === 'Complete') {
+        res.status(400).send('Payment has been already completed!');
+        return;
+    }
+    
+    payment.status = 'Cancelled';
+    res.status(200).send(payment);
+});
+
 server.delete('/payments/:id', (req, res) => {
     const paymentIdx = paymentsOut.findIndex(payment => payment.id === req.params.id);
     paymentsOut.splice(paymentIdx, 1);
