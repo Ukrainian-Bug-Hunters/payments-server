@@ -24,7 +24,7 @@ function validatePaymentDataMiddleWare(req, res, next) {
     next();
 };
 
-server.get('/payments/balance', (req, res) => {
+server.get('/balance', (req, res) => {
     const balance = {
         amount: calculateTotalhomeAmount(paymentsIn),
         currency: 'GBP',
