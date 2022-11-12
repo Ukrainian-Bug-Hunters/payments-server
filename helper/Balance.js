@@ -11,4 +11,3 @@ const calculateTotalhomeAmount = (payments) => {
 };
 
 export {calculateHomeAmount, calculateTotalhomeAmount};
-// export default calculateTotalhomeAmount;

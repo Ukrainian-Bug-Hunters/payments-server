@@ -4,6 +4,9 @@ import { v4 as uuidv4 } from "uuid";
 import paymentValidator from "./PaymentValidator.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import paymentsIn from "./data/payments-in.js";
+import paymentsOut from "./data/payments-out.js";
+import { calculateTotalhomeAmount } from "./helper/Balance.js";
 
 const server = express();
 server.use(express.json());
@@ -80,7 +83,7 @@ server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
     id: uuidv4(),
     status: "Pending",
   });
-  payments.push(payment);
+  paymentsOut.push(payment);
   res.status(200).send(payment);
 
   setTimeout(() => {
@@ -105,7 +108,7 @@ server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
 
 
 server.put("/payments/:id", (req, res) => {
-  const payment = payments.find((payment) => payment.id === req.params.id);
+  const payment = paymentsOut.find((payment) => payment.id === req.params.id);
   if (!payment) {
     res.status(404).send("Could not find payment with this ID");
     return;
@@ -146,10 +149,10 @@ server.put('/payments/cancel/:id', (req, res) => {
 });
 
 server.delete("/payments/:id", (req, res) => {
-  const paymentIdx = payments.findIndex(
+  const paymentIdx = paymentsOut.findIndex(
     (payment) => payment.id === req.params.id
   );
-  const deletedPayments = payments.splice(paymentIdx, 1);
+  const deletedPayments = paymentsOut.splice(paymentIdx, 1);
   res.status(200).send();
 
   // notify client through the Socket,
