@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import payments from "./payments.js";
 import { v4 as uuidv4 } from "uuid";
 import paymentValidator from "./PaymentValidator.js";
 import { createServer } from "http";
@@ -23,45 +22,56 @@ ioServer.on("connection", (socket) => {
   });
 });
 
-socketServer.listen(5000, () => {
-  console.log(`Server is running on port ${socketServer.address().port}`);
-});
 
-// TODO: this could be externalized
 function validatePaymentDataMiddleWare(req, res, next) {
-  const payment = { ...req.body };
-  const errors = paymentValidator.validate(payment);
+    const payment = {...req.body};
+    const errors = paymentValidator.validate(payment);
 
-  if (errors.length > 0) {
-    res.status(400).send({ errors: errors });
-    next("Payment validation has failed");
-  }
+    if(errors.length > 0) {
+        res.status(400).send({'errors': errors});
+        next("Payment validation has failed");
+    }
 
-  next();
-}
+    next();
+};
 
-server.get("/hello", (req, res) => {
-  res.status(200).send();
-
-  const data = {
-    action: "updated",
-    payments: payments,
-  };
-
-  ioServer.sockets.emit("payments", data);
+server.get('/balance', (req, res) => {
+    const balance = {
+        amount: calculateTotalhomeAmount(paymentsIn),
+        currency: 'GBP',
+        currencySymbol: '\u00A3'
+    };
+    
+    res.status(200).send(balance);
 });
 
-server.get("/payments", (req, res) => {
-  res.status(200).send(payments);
+server.get('/payments', (req, res) => {
+    res.status(200).send(paymentsOut);
 });
 
-server.get("/payments/:id", (req, res) => {
-  const payment = payments.find((payment) => payment.id === req.params.id);
-  if (payment) {
-    res.status(200).send(payment);
-    return;
+server.put('/payments/:id', (req, res) => {
+  const payment = paymentsOut.find( payment => payment.id === req.params.id);
+  if(!payment){
+      res.status(404).send('Could not find payment with this ID');
+      return;
   }
-  res.status(404).send({ message: "Wrong id" });
+
+  if(!req.body.description){
+      res.status(404).send('Wrong description');
+      return;
+  }
+
+  payment.description = req.body.description;
+  res.status(200).send(payment);
+
+  // // notify client though the Socket,
+  // // that some payments have been deleted
+  // const data = {
+  //   action: "updated",
+  //   payments: deletedPayments,
+  // };
+
+  // ioServer.sockets.emit("payments", data);
 });
 
 server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
@@ -93,6 +103,7 @@ server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
   // wait a random number of seconds between 10 and 10+15=25 seconds.
 });
 
+
 server.put("/payments/:id", (req, res) => {
   const payment = payments.find((payment) => payment.id === req.params.id);
   if (!payment) {
@@ -109,6 +120,31 @@ server.put("/payments/:id", (req, res) => {
   res.status(200).send(payment);
 });
 
+server.put('/payments/cancel/:id', (req, res) => {
+  const payment = paymentsOut.find( payment => payment.id === req.params.id);
+  if(!payment){
+      res.status(404).send('Could not find payment with this ID');
+      return;
+  }
+  
+  if(payment.status === 'Complete') {
+      res.status(409).send('Payment has been already completed!');
+      return;
+  }
+  
+  payment.status = 'Cancelled';
+  res.status(200).send(payment);
+
+  // notify client though the Socket,
+  // that some payments have been deleted
+  const data = {
+    action: "updated",
+    payments: deletedPayments,
+  };
+
+  ioServer.sockets.emit("payments", data);
+});
+
 server.delete("/payments/:id", (req, res) => {
   const paymentIdx = payments.findIndex(
     (payment) => payment.id === req.params.id
@@ -116,7 +152,7 @@ server.delete("/payments/:id", (req, res) => {
   const deletedPayments = payments.splice(paymentIdx, 1);
   res.status(200).send();
 
-  // notify client though the Socket,
+  // notify client through the Socket,
   // that some payments have been deleted
   const data = {
     action: "deleted",
@@ -126,6 +162,13 @@ server.delete("/payments/:id", (req, res) => {
   ioServer.sockets.emit("payments", data);
 });
 
-server.listen(4000, function () {
-  console.log(`Server is running on port ${this.address().port}`);
+socketServer.listen(5000, () => {
+  console.log(`Socket server is running on port ${socketServer.address().port}`);
 });
+
+server.listen(4000, function () {
+  console.log(`Backend server is running on port ${this.address().port}`);
+});
+
+
+
