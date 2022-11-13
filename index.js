@@ -25,7 +25,6 @@ ioServer.on("connection", (socket) => {
   });
 });
 
-
 function validatePaymentDataMiddleWare(req, res, next) {
     const payment = {...req.body};
     const errors = paymentValidator.validate(payment);
@@ -52,53 +51,29 @@ server.get('/payments', (req, res) => {
     res.status(200).send(paymentsOut);
 });
 
-server.put('/payments/:id', (req, res) => {
-  const payment = paymentsOut.find( payment => payment.id === req.params.id);
-  if(!payment){
-      res.status(404).send('Could not find payment with this ID');
-      return;
-  }
-
-  if(!req.body.description){
-      res.status(404).send('Wrong description');
-      return;
-  }
-
-  payment.description = req.body.description;
-  res.status(200).send(payment);
-
-  // // notify client though the Socket,
-  // // that some payments have been deleted
-  // const data = {
-  //   action: "updated",
-  //   payments: deletedPayments,
-  // };
-
-  // ioServer.sockets.emit("payments", data);
-});
-
 server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
   const payment = { ...req.body };
   Object.assign(payment, {
     id: uuidv4(),
     status: "Pending",
   });
+
   paymentsOut.push(payment);
-  res.status(200).send(payment);
+  res.status(200).send();
+
+  const data = {
+    action: "created",
+    payment: payment,
+  };
+
+  ioServer.sockets.emit("payments", data);
 
   setTimeout(() => {
     payment.status = "Completed";
 
-    // this the place we want to notify our client
-    // about something has changed with payments data
-
-    /**
-     * implement code here that emits message to all clients
-     * connected through Socket to us (server).
-     */
     const data = {
       action: "updated",
-      payments: [payment],
+      payment: payment,
     };
 
     ioServer.sockets.emit("payments", data);
@@ -120,7 +95,14 @@ server.put("/payments/:id", (req, res) => {
   }
 
   payment.description = req.body.description;
-  res.status(200).send(payment);
+  res.status(200).send();
+
+  const data = {
+    action: "updated",
+    payment: payment,
+  };
+
+  ioServer.sockets.emit("payments", data);
 });
 
 server.put('/payments/cancel/:id', (req, res) => {
@@ -136,13 +118,11 @@ server.put('/payments/cancel/:id', (req, res) => {
   }
   
   payment.status = 'Cancelled';
-  res.status(200).send(payment);
+  res.status(200).send();
 
-  // notify client though the Socket,
-  // that some payments have been deleted
   const data = {
     action: "updated",
-    payments: deletedPayments,
+    payment: payment,
   };
 
   ioServer.sockets.emit("payments", data);
@@ -152,14 +132,13 @@ server.delete("/payments/:id", (req, res) => {
   const paymentIdx = paymentsOut.findIndex(
     (payment) => payment.id === req.params.id
   );
-  const deletedPayments = paymentsOut.splice(paymentIdx, 1);
+
+  const payment = paymentsOut.splice(paymentIdx, 1).pop();
   res.status(200).send();
 
-  // notify client through the Socket,
-  // that some payments have been deleted
   const data = {
     action: "deleted",
-    payments: deletedPayments,
+    payment: payment,
   };
 
   ioServer.sockets.emit("payments", data);
