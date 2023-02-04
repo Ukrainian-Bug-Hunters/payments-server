@@ -1,13 +1,15 @@
 import express from "express";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
-import paymentValidator from "./PaymentValidator.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { connectDb, disconnectDb } from "./db.js";
+import db from "./db.js";
+
+import paymentValidator from "./PaymentValidator.js";
 import paymentsIn from "./data/payments-in.js";
 import paymentsOut from "./data/payments-out.js";
 import { calculateTotalhomeAmount } from "./helper/Balance.js";
-import { connectDb, disconnectDb } from "./db.js";
 
 const SERVER_PORT = process.env.PORT || 4000;
 const SOCKET_PORT = process.env.SOCKET_PORT || 5000;
@@ -40,6 +42,16 @@ function validatePaymentDataMiddleWare(req, res, next) {
 
     next();
 };
+
+server.get('/health', (req, res) => {
+  db.query("select version()")
+    .then((result) => {
+      res.status(200).send(result.rows[0]);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+});
 
 server.get('/balance', (req, res) => {
     const balance = {
@@ -157,7 +169,3 @@ socketServer.listen(SOCKET_PORT, "0.0.0.0", () => {
 connectDb().then(() => server.listen(SERVER_PORT, "0.0.0.0", function () {
   console.log(`Backend server is running on port ${this.address().port}`);
 }));
-
-
-
-

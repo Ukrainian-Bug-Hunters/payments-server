@@ -1,4 +1,5 @@
-import { Pool } from "pg";
+import pg from "pg";
+const { Pool } = pg;
 
 const dbUrl = process.env.DATABASE_URL || "postgres://localhost:5432/payments";
 
@@ -41,4 +42,8 @@ export const connectDb = async () => {
 
 export const disconnectDb = () => pool.close();
 
-export default { query: pool.query.bind(pool), connect: connectDb, disconnect: disconnectDb };
+export default { 
+	query: pool.query.bind(pool), 
+	connect: connectDb, 
+	disconnect: disconnectDb 
+};
