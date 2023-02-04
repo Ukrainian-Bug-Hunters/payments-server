@@ -8,7 +8,7 @@ import paymentsIn from "./data/payments-in.js";
 import paymentsOut from "./data/payments-out.js";
 import { calculateTotalhomeAmount } from "./helper/Balance.js";
 
-const SERVER_PORT = process.env.SERVER_PORT || 4000;
+const SERVER_PORT = process.env.PORT || 4000;
 const SOCKET_PORT = process.env.SOCKET_PORT || 5000;
 
 const server = express();
@@ -147,11 +147,11 @@ server.delete("/payments/:id", (req, res) => {
   ioServer.sockets.emit("payments", data);
 });
 
-socketServer.listen(SOCKET_PORT, () => {
+socketServer.listen(SOCKET_PORT, "0.0.0.0", () => {
   console.log(`Socket server is running on port ${socketServer.address().port}`);
 });
 
-server.listen(SERVER_PORT, function () {
+server.listen(SERVER_PORT, "0.0.0.0", function () {
   console.log(`Backend server is running on port ${this.address().port}`);
 });
 
