@@ -148,13 +148,16 @@ server.delete("/payments/:id", (req, res) => {
   ioServer.sockets.emit("payments", data);
 });
 
+process.on("SIGTERM", () => server.close(() => disconnectDb()));
+
 socketServer.listen(SOCKET_PORT, "0.0.0.0", () => {
   console.log(`Socket server is running on port ${socketServer.address().port}`);
 });
 
-server.listen(SERVER_PORT, "0.0.0.0", function () {
+connectDb().then(() => server.listen(SERVER_PORT, "0.0.0.0", function () {
   console.log(`Backend server is running on port ${this.address().port}`);
-});
+}));
+
 
 
 

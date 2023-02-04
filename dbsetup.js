@@ -1,5 +1,6 @@
-const fs = require("fs");
-const { Pool } = require("pg");
+import fs from "fs";
+import pg from "pg";
+const { Pool } = pg;
 
 const dbUrl = process.env.DATABASE_URL || "postgres://localhost:5432/payments";
 
@@ -22,20 +23,23 @@ pool
 	.query(dbsetup)
 	.then(() => console.info("running db setup script..."))
 	.then(() => {
-		if (String(process.env.DATABASE_SEED) === "true") {
-			/**
-			 * dbseed.sql has testing data that can be populated
-			 * if process.env.DATABASE_SEED is set and to "true"
-			 */
-			const dbseed = fs.readFileSync("./dbseed.sql").toString();
-			pool.query(dbseed)
-				.then(() => console.info("running db seed script..."))
-				.catch((err) => {
-					// if caught an Error here, then throw it further
-					// into the next catch() where we print it and exit the process.
-					throw err;
-				});
-		}
+		
+    // TODO: 
+    // if needed check env.variable (String(process.env.DATABASE_SEED) === "true")
+    // before populating the seeding the data
+    
+    /**
+     * dbseed.sql has testing data that can be populated
+     * if process.env.DATABASE_SEED is set to "true"
+     */
+    const dbseed = fs.readFileSync("./dbseed.sql").toString();
+    pool.query(dbseed)
+      .then(() => console.info("running db seed script..."))
+      .catch((err) => {
+        // if caught an Error here, then throw it further
+        // into the next catch() where we print it and exit the process.
+        throw err;
+      });
 	})
 	.catch((err) => {
 		console.error(err);
