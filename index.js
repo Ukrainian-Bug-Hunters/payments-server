@@ -8,8 +8,9 @@ import paymentsIn from "./data/payments-in.js";
 import paymentsOut from "./data/payments-out.js";
 import { calculateTotalhomeAmount } from "./helper/Balance.js";
 
-const SERVER_PORT = process.env.PORT || 4000;
-const SOCKET_PORT = process.env.PORT || 5000;
+const SERVER_PORT = process.env.SERVER_PORT || 4000;
+const SOCKET_PORT = process.env.SOCKET_PORT || 5000;
+
 const server = express();
 server.use(express.json());
 server.use(cors());
