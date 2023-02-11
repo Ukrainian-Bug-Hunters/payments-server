@@ -3,12 +3,12 @@ import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import paymentsOut from "./data/payments-out.js";
+import paymentsIn from "./data/payments-in.js";
 import { connectDb, disconnectDb } from "./db.js";
 import db from "./db.js";
 
 import paymentValidator from "./PaymentValidator.js";
-import paymentsIn from "./data/payments-in.js";
-import paymentsOut from "./data/payments-out.js";
 import { calculateTotalhomeAmount } from "./helper/Balance.js";
 
 const SERVER_PORT = process.env.PORT || 4000;
@@ -54,17 +54,28 @@ server.get('/health', (req, res) => {
 });
 
 server.get('/balance', (req, res) => {
-    const balance = {
-        amount: calculateTotalhomeAmount(paymentsIn),
+  db.query("select * from payments")
+    .then((result) => {
+      const balance = {
+        amount: calculateTotalhomeAmount(result.rows),
         currency: 'GBP',
         currencySymbol: '\u00A3'
-    };
-    
-    res.status(200).send(balance);
+      };
+      res.status(200).send(balance);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });
 
 server.get('/payments', (req, res) => {
-    res.status(200).send(paymentsOut);
+  db.query("select * from payments")
+    .then((result) => {
+      res.status(200).send(result.rows);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
 });
 
 server.post("/payments", validatePaymentDataMiddleWare, (req, res) => {
